@@ -1,3 +1,4 @@
+use diesel::PgConnection;
 use crate::schema::products;
 
 #[derive(Serialize, Deserialize)]
@@ -22,16 +23,13 @@ pub struct NewProduct {
 use diesel::QueryDsl;
 use diesel::RunQueryDsl;
 use crate::schema::products::dsl;
-use crate::db_connection::establish_connection;
 
 impl ProductList {
-    pub fn list() -> Self {
-        let connection = establish_connection();
-
+    pub fn list(connection: &PgConnection) -> Self {
         let result = 
             products::table
                 .limit(10)
-                .load::<Product>(&connection)
+                .load::<Product>(connection)
                 .expect("Error loading products");
 
         ProductList(result)
@@ -39,34 +37,27 @@ impl ProductList {
 }
 
 impl NewProduct {
-    pub fn create(&self) -> Result<Product, diesel::result::Error> {
-        let connection = establish_connection();
+    pub fn create(&self, connection: &PgConnection) -> Result<Product, diesel::result::Error> {
         diesel::insert_into(products::table)
             .values(self)
-            .get_result(&connection)
+            .get_result(connection)
     }
 }
 
 impl Product {
-    pub fn find(id: &i32) -> Result<Product, diesel::result::Error> {
-        let connection = establish_connection();
-
-        products::table.find(id).first(&connection)
+    pub fn find(id: &i32, connection: &PgConnection) -> Result<Product, diesel::result::Error> {
+        products::table.find(id).first(connection)
     }
 
-    pub fn destroy(id: &i32) -> Result<(), diesel::result::Error> {
-        let connection = establish_connection();
-
-        diesel::delete(dsl::products.find(id)).execute(&connection)?;
+    pub fn destroy(id: &i32, connection: &PgConnection) -> Result<(), diesel::result::Error> {
+        diesel::delete(dsl::products.find(id)).execute(connection)?;
         Ok(())
     }
 
-    pub fn update(id: &i32, new_product: &NewProduct) -> Result<(), diesel::result::Error> {
-        let connection = establish_connection();
-
+    pub fn update(id: &i32, new_product: &NewProduct, connection: &PgConnection) -> Result<(), diesel::result::Error> {
         diesel::update(dsl::products.find(id))
             .set(new_product)
-            .execute(&connection)?;
+            .execute(connection)?;
         Ok(())
     }
 }
