@@ -14,13 +14,17 @@ extern crate serde_derive;
 extern crate actix;
 extern crate actix_web;
 extern crate futures;
-use actix_web::{App, HttpServer, web};
+
+use actix_web::{App, HttpServer, web, middleware};
+use db_connection::establish_connection;
 
 fn main() {
     let sys = actix::System::new("mystore");
 
     HttpServer::new(
-    || App::new()
+    move || App::new()
+        .wrap(middleware::Logger::default())
+        .data(establish_connection())
         .service(
             web::resource("/products")
                 .route(web::get().to_async(handlers::products::index))
