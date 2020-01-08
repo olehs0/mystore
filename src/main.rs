@@ -2,6 +2,8 @@ pub mod schema;
 pub mod db_connection;
 pub mod models;
 pub mod handlers;
+pub mod errors;
+pub mod utils;
 
 #[macro_use]
 extern crate diesel;
@@ -13,28 +15,61 @@ extern crate serde_derive;
 
 extern crate actix;
 extern crate actix_web;
-extern crate futures;
+extern crate bcrypt;
+extern crate jsonwebtoken as jwt;
 
-use actix_web::{App, HttpServer, web, middleware};
+#[macro_use]
+extern crate dotenv_codegen;
+
+extern crate log;
+extern crate env_logger;
+
+extern crate actix_http;
+
+use actix_web::{App, HttpServer, web};
+use actix_identity::{CookieIdentityPolicy, IdentityService};
+use actix_web::middleware::{Logger};
+use chrono::Duration;
 use db_connection::establish_connection;
 
 fn main() {
+    std::env::set_var("RUST_LOG", "actix_web=debug");
+    env_logger::init();
     let sys = actix::System::new("mystore");
 
     HttpServer::new(
     move || App::new()
-        .wrap(middleware::Logger::default())
+        .wrap(Logger::default())
+        .wrap(
+            IdentityService::new(
+                CookieIdentityPolicy::new(dotenv!("SECRET_KEY").as_bytes())
+                    .domain(dotenv!("HOST"))
+                    .name("jwt")
+                    .path("/")
+                    .max_age(Duration::days(1).num_seconds())
+                    .secure(dotenv!("COOKIE_SECURE").parse().unwrap())
+            )
+        )
         .data(establish_connection())
         .service(
             web::resource("/products")
-                .route(web::get().to_async(handlers::products::index))
-                .route(web::post().to_async(handlers::products::create))
+                .route(web::get().to(handlers::products::index))
+                .route(web::post().to(handlers::products::create))
         )
         .service(
             web::resource("/products/{id}")
-                .route(web::get().to_async(handlers::products::show))
-                .route(web::delete().to_async(handlers::products::destroy))
-                .route(web::patch().to_async(handlers::products::update))
+                .route(web::get().to(handlers::products::show))
+                .route(web::delete().to(handlers::products::destroy))
+                .route(web::patch().to(handlers::products::update))
+        )
+        .service(
+            web::resource("/register")
+                .route(web::post().to(handlers::register::register))
+        )
+        .service(
+            web::resource("/auth")
+                .route(web::post().to(handlers::authentication::login))
+                .route(web::delete().to(handlers::authentication::logout))
         )
     )
     .bind("127.0.0.1:8088").unwrap()

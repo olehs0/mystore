@@ -1,5 +1,5 @@
-use diesel::PgConnection;
 use crate::schema::products;
+use diesel::PgConnection;
 
 #[derive(Serialize, Deserialize)]
 pub struct ProductList(pub Vec<Product>);
@@ -9,28 +9,29 @@ pub struct Product {
     pub id: i32,
     pub name: String,
     pub stock: f64,
-    pub price: Option<i32>
+    pub price: Option<i32>,
+    pub user_id: i32,
 }
 
 #[derive(Insertable, Deserialize, AsChangeset)]
-#[table_name="products"]
+#[table_name = "products"]
 pub struct NewProduct {
     pub name: Option<String>,
     pub stock: Option<f64>,
-    pub price: Option<i32>
+    pub price: Option<i32>,
+    pub user_id: Option<i32>,
 }
 
+use crate::schema::products::dsl;
 use diesel::QueryDsl;
 use diesel::RunQueryDsl;
-use crate::schema::products::dsl;
 
 impl ProductList {
     pub fn list(connection: &PgConnection) -> Self {
-        let result = 
-            products::table
-                .limit(10)
-                .load::<Product>(connection)
-                .expect("Error loading products");
+        let result = products::table
+            .limit(10)
+            .load::<Product>(connection)
+            .expect("Error loading products");
 
         ProductList(result)
     }
@@ -54,7 +55,11 @@ impl Product {
         Ok(())
     }
 
-    pub fn update(id: &i32, new_product: &NewProduct, connection: &PgConnection) -> Result<(), diesel::result::Error> {
+    pub fn update(
+        id: &i32,
+        new_product: &NewProduct,
+        connection: &PgConnection,
+    ) -> Result<(), diesel::result::Error> {
         diesel::update(dsl::products.find(id))
             .set(new_product)
             .execute(connection)?;
