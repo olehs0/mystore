@@ -14,6 +14,7 @@ extern crate serde_json;
 extern crate serde_derive;
 
 extern crate actix;
+extern crate actix_cors;
 extern crate actix_web;
 extern crate bcrypt;
 extern crate jsonwebtoken as jwt;
@@ -28,7 +29,7 @@ extern crate actix_http;
 
 use actix_web::{App, HttpServer, web};
 use actix_identity::{CookieIdentityPolicy, IdentityService};
-use actix_web::middleware::{Logger};
+use actix_web::middleware::{cors, Logger};
 use chrono::Duration;
 use db_connection::establish_connection;
 
@@ -72,9 +73,9 @@ fn main() {
                 .route(web::delete().to(handlers::authentication::logout))
         )
     )
-    .bind("127.0.0.1:8088").unwrap()
+    .bind("0.0.0.0:8088").unwrap()
     .start();
 
-    println!("Started http server: 127.0.0.1:8088");
+    println!("Started http server: 0.0.0.0:8088");
     let _ = sys.run();
 }
