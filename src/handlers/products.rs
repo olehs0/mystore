@@ -15,8 +15,10 @@ pub fn index(_req: HttpRequest, pool: web::Data<PgPool>) -> Result<HttpResponse,
 }
 
 use crate::models::product::NewProduct;
+use crate::handlers::LoggedUser;
 
 pub fn create(
+    _user: LoggedUser,
     new_product: web::Json<NewProduct>,
     pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, HttpResponse> {

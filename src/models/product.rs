@@ -29,7 +29,6 @@ use diesel::RunQueryDsl;
 impl ProductList {
     pub fn list(connection: &PgConnection) -> Self {
         let result = products::table
-            .limit(10)
             .load::<Product>(connection)
             .expect("Error loading products");
 

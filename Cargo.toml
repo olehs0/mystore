@@ -12,6 +12,8 @@ actix-web = "1.0.0"
 diesel = { version = "1.0.0", features = ["postgres", "r2d2", "chrono"] }
 dotenv = "0.14.0"
 dotenv_codegen="0.14.0"
+uuid = { version = "0.7", features = ["serde", "v4"] }
+derive_more = "0.15.0"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"

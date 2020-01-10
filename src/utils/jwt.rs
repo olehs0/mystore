@@ -10,6 +10,7 @@ struct Claims {
     exp: usize
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SlimUser {
     pub id: i32,
     pub email: String,
