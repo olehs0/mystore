@@ -1,0 +1,13 @@
+version: '2.1'
+
+volumes:
+  local_postgres_data: {}
+
+services:
+  postgres:
+    image: postgres:10
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data
+    ports:
+      - 6543:5432
+
