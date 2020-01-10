@@ -68,7 +68,7 @@ fn main() {
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
         server.listen(l).unwrap()
     } else {
-        server.bind("127.0.0.1:8088").unwrap()
+        server.bind("0.0.0.0:8088").unwrap()
     };
 
     server.start();
